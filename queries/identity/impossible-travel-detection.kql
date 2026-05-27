@@ -1,0 +1,82 @@
+// ============================================================
+// Impossible Travel Detection
+// ============================================================
+// Purpose:    Detect sign-ins from two different countries
+//             within a 24-hour window for the same user.
+//             Indicates potential account compromise or
+//             credential sharing.
+// MITRE:      T1078 - Valid Accounts
+// Lookback:   24 hours
+// Scheduled:  Every 1 hour
+// Severity:   High
+// Table:      SigninLogs (Entra ID)
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(24h)
+| where ResultType == 0
+| where isnotempty(UserPrincipalName)
+| where isnotempty(IPAddress)
+| extend
+    Country = tostring(LocationDetails.countryOrRegion),
+    City = tostring(LocationDetails.city),
+    DeviceName = tostring(DeviceDetail.displayName),
+    OS = tostring(DeviceDetail.operatingSystem),
+    Browser = tostring(DeviceDetail.browser)
+| where isnotempty(Country)
+| summarize
+    SigninHistory = make_list(
+        pack(
+            "Time", TimeGenerated,
+            "Country", Country,
+            "City", City,
+            "IP", IPAddress,
+            "Device", DeviceName,
+            "OS", OS,
+            "Browser", Browser
+        ),
+        2
+    )
+    by UserPrincipalName
+| where array_length(SigninHistory) == 2
+| extend
+    Previous = SigninHistory[1],
+    Current  = SigninHistory[0]
+| extend
+    PreviousCountry = tostring(Previous.Country),
+    PreviousCity    = tostring(Previous.City),
+    PreviousIP      = tostring(Previous.IP),
+    NewCountry      = tostring(Current.Country),
+    NewCity         = tostring(Current.City),
+    NewIP           = tostring(Current.IP),
+    Device          = tostring(Current.Device),
+    OS              = tostring(Current.OS),
+    Browser         = tostring(Current.Browser),
+    PreviousTime    = todatetime(Previous.Time),
+    CurrentTime     = todatetime(Current.Time)
+| where PreviousCountry != NewCountry
+| project
+    CurrentTime,
+    UserPrincipalName,
+    PreviousCountry,
+    PreviousCity,
+    PreviousIP,
+    NewCountry,
+    NewCity,
+    NewIP,
+    Device,
+    OS,
+    Browser,
+    PreviousTime
+| order by CurrentTime desc
+
+// ============================================================
+// Tuning Notes:
+// - In single-user lab environments this returns 0 results
+//   unless sign-ins occur from different geographic locations.
+// - Add TimeDelta check for stricter impossible travel:
+//   | extend TimeDelta = CurrentTime - PreviousTime
+//   | where TimeDelta < 2h
+// - Consider adding MFA status field for enrichment.
+// - Cross-reference NewIP with ThreatIntelligenceIndicator.
+// ============================================================
