@@ -1,0 +1,44 @@
+// ============================================================
+// Brute Force Sign-in Detection (5 Minutes - Real-Time)
+// ============================================================
+// Purpose:    Detects rapid failed Entra ID sign-in attempts
+//             from a single IP within a 5-minute window.
+//             Designed for use in scheduled Sentinel analytic
+//             rules for real-time alerting.
+// MITRE:      T1110.001 - Brute Force: Password Guessing
+// Lookback:   5 minutes
+// Scheduled:  Every 5 minutes
+// Severity:   Low (SSH Brute Force on Linux rule)
+// Table:      SigninLogs (Entra ID)
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(5m)
+| where ResultType != 0
+| where isnotempty(IPAddress)
+| summarize
+    FailedAttempts  = count(),
+    UsersTargeted   = make_set(UserPrincipalName)
+    by IPAddress, bin(TimeGenerated, 10m)
+| where FailedAttempts >= 5
+| order by FailedAttempts desc
+
+// ============================================================
+// Tuning Notes:
+// - This query is the basis for the SSH Brute Force on Linux
+//   and RDP Brute Force Attack analytic rules in Sentinel.
+// - The bin(TimeGenerated, 10m) groups events into 10-minute
+//   buckets for temporal analysis of attack patterns.
+// - make_set(UserPrincipalName) shows all targeted accounts
+//   from the same IP address in the same time window.
+//
+// When to use which version:
+//   * 5-minute version: Use in Sentinel analytic rules
+//     scheduled to run every 5-10 minutes for real-time alerts
+//   * 1-hour version (brute-force-signin-1h.kql): Use in
+//     hunting notebooks for broader retrospective analysis
+//
+// Lab Evidence:
+//   This query powered the SSH Brute Force on Linux detection
+//   rule which generated 2 confirmed alerts on linux-vm.
+// ============================================================
