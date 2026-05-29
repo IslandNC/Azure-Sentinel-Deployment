@@ -1,15 +1,19 @@
 // ============================================================
 // Impossible Travel Detection
 // ============================================================
-// Purpose:    Detect sign-ins from two different countries
-//             within a 24-hour window for the same user.
-//             Indicates potential account compromise or
-//             credential sharing.
-// MITRE:      T1078 - Valid Accounts
-// Lookback:   24 hours
-// Scheduled:  Every 1 hour
-// Severity:   High
-// Table:      SigninLogs (Entra ID)
+// Purpose: Detect sign-ins from two different countries
+//          within a 24-hour window for the same user.
+//          Indicates potential account compromise or
+//          credential sharing.
+// MITRE:   T1078 - Valid Accounts
+// Lookback: 24 hours
+// Scheduled: Every 1 hour
+// Severity: High
+// Table:   SigninLogs (Entra ID)
+// Note:    make_list(..., 2) captures the two most recent
+//          sign-ins only. Users with 3+ sign-ins are evaluated
+//          on their two most recent; earlier country changes
+//          will not trigger this rule.
 // ============================================================
 
 SigninLogs
@@ -18,21 +22,23 @@ SigninLogs
 | where isnotempty(UserPrincipalName)
 | where isnotempty(IPAddress)
 | extend
-    Country = tostring(LocationDetails.countryOrRegion),
-    City = tostring(LocationDetails.city),
+    Country    = tostring(LocationDetails.countryOrRegion),
+    City       = tostring(LocationDetails.city),
     DeviceName = tostring(DeviceDetail.displayName),
-    OS = tostring(DeviceDetail.operatingSystem),
-    Browser = tostring(DeviceDetail.browser)
+    OS         = tostring(DeviceDetail.operatingSystem),
+    Browser    = tostring(DeviceDetail.browser)
 | where isnotempty(Country)
+// Sort descending so make_list captures most-recent first
+| sort by TimeGenerated desc
 | summarize
     SigninHistory = make_list(
         pack(
-            "Time", TimeGenerated,
+            "Time",    TimeGenerated,
             "Country", Country,
-            "City", City,
-            "IP", IPAddress,
-            "Device", DeviceName,
-            "OS", OS,
+            "City",    City,
+            "IP",      IPAddress,
+            "Device",  DeviceName,
+            "OS",      OS,
             "Browser", Browser
         ),
         2
@@ -77,6 +83,12 @@ SigninLogs
 // - Add TimeDelta check for stricter impossible travel:
 //   | extend TimeDelta = CurrentTime - PreviousTime
 //   | where TimeDelta < 2h
-// - Consider adding MFA status field for enrichment.
-// - Cross-reference NewIP with ThreatIntelligenceIndicator.
+// - Consider adding MFA status field for enrichment:
+//   | extend MFAUsed = tostring(AuthenticationDetails[0].authenticationMethod)
+// - Cross-reference NewIP with ThreatIntelligenceIndicator:
+//   | join kind=leftouter (
+//       ThreatIntelligenceIndicator
+//       | where Active == true
+//       | project TI_IP = NetworkIP, ThreatType
+//     ) on $left.NewIP == $right.TI_IP
 // ============================================================
