@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor files
+*.tmp
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Credentials and secrets (never commit these)
+*.pem
+*.key
+*.env
+secrets.json
+
+# Python (if any scripts are added)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
