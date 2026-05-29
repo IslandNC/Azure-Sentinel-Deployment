@@ -1,10 +1,11 @@
-# 07 — Threat Intelligence
-
-## Overview
+## 07 — Threat Intelligence
+### Overview
 
 Microsoft Defender Threat Intelligence capabilities were explored as part of this deployment, including threat actor profiles, technique profiles, and integration with Sentinel detection and hunting workflows.
 
-## Features Explored
+---
+
+### Features Explored
 
 - **Threat Analytics** — Curated intelligence reports from Microsoft research teams covering active threat actors, TTPs, and environment-specific exposure
 - **Intel Management** — Manage IoCs: IP addresses, domains, file hashes, STIX/TAXII feeds
@@ -12,7 +13,9 @@ Microsoft Defender Threat Intelligence capabilities were explored as part of thi
 - **Intel Explorer** — Graph-based view of relationships between actors, techniques, and indicators
 - **Intel Projects** — Structured investigation project management
 
-## Observed Threat Actor Score Drops
+---
+
+### Observed Threat Actor Score Drops
 
 | Actor / Technique | Score Drop | Notes |
 |---|---|---|
@@ -24,22 +27,47 @@ Microsoft Defender Threat Intelligence capabilities were explored as part of thi
 
 These drops reflect intentional VM exposure and absence of enterprise hardening. In production each drop triggers a remediation workstream.
 
-## TI Integration with Sentinel
+---
 
-The Threat Intelligence connector ingests IoCs into ThreatIntelligenceIndicator, enabling TI-based detection rules, incident enrichment with threat actor context, and cross-referencing hunting queries against the TI feed.
+### TI Integration with Sentinel
 
-## MITRE ATT&CK Coverage Map
+The Threat Intelligence connector ingests IoCs into `ThreatIntelligenceIndicator`, enabling:
 
-| Phase | Technique | Detection Rule |
-|---|---|---|
-| Initial Access | T1078 — Valid Accounts | Entra ID Sign-in from Different Location |
-| Credential Access | T1110.001 — Brute Force | RDP Brute Force Attack |
-| Credential Access | T1110.001 — Brute Force | SSH Brute Force on Linux |
+- TI-based detection rules (e.g., alert on sign-in from a known-malicious IP)
+- Incident enrichment with threat actor context
+- Cross-referencing hunting queries against the TI feed
 
-The MITRE ATT&CK workbook was used to visualise coverage and identify gaps.
+---
 
-## Key Takeaways
+### MITRE ATT&CK Coverage Map
+
+#### Deployed Detection Rules
+
+| Phase | Technique | Detection Rule | Status |
+|---|---|---|---|
+| Initial Access | T1078 — Valid Accounts | Entra ID Sign-in from Different Location | Enabled |
+| Credential Access | T1110.001 — Brute Force | RDP Brute Force Attack | Enabled |
+| Credential Access | T1110.001 — Brute Force | SSH Brute Force on Linux | Enabled |
+| Execution | T1059 — Command and Scripting Interpreter | Process Creation Anomaly (LOLBin) | Query only (no rule yet) |
+
+#### Planned Detection Rules
+
+| Phase | Technique | Detection Rule | Status |
+|---|---|---|---|
+| Persistence | T1078.004 — Cloud Account Abuse | New high-privilege role assignments in Entra ID | Planned |
+| Persistence | T1136 — Create Account | New user accounts created outside business hours | Planned |
+| Defence Evasion | T1562 — Impair Defences | MDE tamper protection disabled | Planned |
+| Execution | T1059 — Command and Scripting Interpreter | PowerShell with encoded commands (analytic rule) | Planned |
+| Credential Access | T1003 — OS Credential Dumping | LSASS access on windows-vm | Planned |
+| Defence Evasion | T1218 — System Binary Proxy Execution | LOLBin execution (analytic rule) | Planned |
+
+The MITRE ATT&CK workbook was used to visualise coverage and identify gaps across all phases.
+
+---
+
+### Key Takeaways
 
 - IoC-based detection has limitations as IoCs age quickly; TTP-based behavioural rules are more durable
 - UEBA (BehaviorAnalyticsInsights) complements TI with entity-level risk scoring based on behaviour patterns
 - TI is most valuable when integrated with detection and hunting workflows
+- The planned rules above target the most significant coverage gaps identified during this deployment
