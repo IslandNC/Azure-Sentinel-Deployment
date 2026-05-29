@@ -1,0 +1,35 @@
+// ============================================================
+// Query: Process Creation Anomaly Detection
+// Purpose: Detect unusual process creation events on endpoints,
+//          particularly LOLBins and common attacker tooling
+// Table:   SecurityEvent
+// MITRE:   T1059 (Command and Scripting Interpreter)
+//          T1218 (System Binary Proxy Execution)
+// Lookback: 1h
+// Scheduling: Every 1h
+// Severity: Medium
+// ============================================================
+
+let SuspiciousProcesses = dynamic([
+    "powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe",
+    "mshta.exe", "regsvr32.exe", "rundll32.exe", "certutil.exe",
+    "bitsadmin.exe", "wmic.exe", "msiexec.exe", "msbuild.exe",
+    "installutil.exe", "regasm.exe", "regsvcs.exe", "odbcconf.exe",
+    "msconfig.exe", "at.exe", "schtasks.exe", "net.exe"
+]);
+SecurityEvent
+| where TimeGenerated > ago(1h)
+| where EventID == 4688
+| where isnotempty(NewProcessName)
+| extend ProcessName = tostring(split(NewProcessName, "\\")[-1])
+| where ProcessName in~ (SuspiciousProcesses)
+| project TimeGenerated, Computer, Account, ParentProcessName,
+          NewProcessName, ProcessName, CommandLine, SubjectUserName
+| order by TimeGenerated desc
+
+// Tuning notes:
+// - Whitelist known-good parent/child combinations for your environment
+// - CommandLine enrichment requires Windows Security Auditing policy
+//   to log process creation with command lines (Event 4688)
+// - Consider correlating with user logon events to identify context
+// - High-volume environments may need additional filtering on Computer
