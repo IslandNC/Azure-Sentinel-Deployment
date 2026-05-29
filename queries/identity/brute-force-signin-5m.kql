@@ -1,15 +1,20 @@
 // ============================================================
 // Brute Force Sign-in Detection (5 Minutes - Real-Time)
 // ============================================================
-// Purpose:    Detects rapid failed Entra ID sign-in attempts
-//             from a single IP within a 5-minute window.
-//             Designed for use in scheduled Sentinel analytic
-//             rules for real-time alerting.
-// MITRE:      T1110.001 - Brute Force: Password Guessing
-// Lookback:   5 minutes
-// Scheduled:  Every 5 minutes
-// Severity:   Low (SSH Brute Force on Linux rule)
-// Table:      SigninLogs (Entra ID)
+// Purpose: Detects rapid failed Entra ID sign-in attempts
+//          from a single IP within a 5-minute window.
+//          Designed for use in scheduled Sentinel analytic
+//          rules for real-time alerting.
+// MITRE:   T1110.001 - Brute Force: Password Guessing
+// Lookback: 5 minutes
+// Scheduled: Every 5 minutes
+// Severity: Medium (RDP Brute Force Attack rule)
+//           Low    (SSH Brute Force on Linux rule)
+// Table:   SigninLogs (Entra ID)
+// Note:    This query is the basis for both the RDP Brute
+//          Force Attack (Medium) and SSH Brute Force on Linux
+//          (Low) analytic rules. Severity is set per rule,
+//          not in the query itself.
 // ============================================================
 
 SigninLogs
@@ -17,8 +22,8 @@ SigninLogs
 | where ResultType != 0
 | where isnotempty(IPAddress)
 | summarize
-    FailedAttempts  = count(),
-    UsersTargeted   = make_set(UserPrincipalName)
+    FailedAttempts = count(),
+    UsersTargeted  = make_set(UserPrincipalName)
     by IPAddress, bin(TimeGenerated, 10m)
 | where FailedAttempts >= 5
 | order by FailedAttempts desc
@@ -33,12 +38,12 @@ SigninLogs
 //   from the same IP address in the same time window.
 //
 // When to use which version:
-//   * 5-minute version: Use in Sentinel analytic rules
-//     scheduled to run every 5-10 minutes for real-time alerts
-//   * 1-hour version (brute-force-signin-1h.kql): Use in
-//     hunting notebooks for broader retrospective analysis
+// * 5-minute version: Use in Sentinel analytic rules
+//   scheduled to run every 5-10 minutes for real-time alerts
+// * 1-hour version (brute-force-signin-1h.kql): Use in
+//   hunting notebooks for broader retrospective analysis
 //
 // Lab Evidence:
-//   This query powered the SSH Brute Force on Linux detection
-//   rule which generated 2 confirmed alerts on linux-vm.
+// This query powered the SSH Brute Force on Linux detection
+// rule which generated 2 confirmed alerts on linux-vm.
 // ============================================================
