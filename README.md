@@ -1,6 +1,6 @@
 # Azure-Sentinel-Deployment
 
-> Hands-on deployment of Microsoft Azure Sentinel SIEM/SOAR — completed as part of the **CyberXcel** cybersecurity training program.
+> Hands-on deployment of Microsoft Azure Sentinel SIEM/SOAR — completed as part of the **CyberXcel** cybersecurity applied program.
 
 > **Status:** Actively maintained. Screenshots, additional KQL queries (network, cloud, threat hunting), and expanded detection rules are in progress.
 
@@ -138,7 +138,7 @@ Azure-Sentinel-Deployment/
 
 ## Training Context
 
-This deployment was completed as a guided hands-on lab through the CyberXcel training program, designed to build practical skills in cloud security monitoring, threat detection, and incident response.
+This deployment was completed as a guided hands-on lab through the CyberXcel cybersecurity applied program, designed to build practical skills in cloud security monitoring, threat detection, and incident response.
 
 ---
 
