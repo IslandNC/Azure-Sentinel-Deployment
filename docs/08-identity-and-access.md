@@ -52,11 +52,11 @@ Linux VM activity appears in `Syslog` rather than the Identity & Access view, as
 | Caller | Deletions | Creations | Updates | Total |
 |---|---|---|---|---|
 | 600eb99a-... (Service Principal) | 0 | 28 | 28 | 28 |
-| cyber.gc1@outlook.com | 12 | 2,194 | 2,194 | 2,425 |
+| xxx.xxx@outlook.com | 12 | 2,194 | 2,194 | 2,425 |
 | 21143f50-... | 0 | 6 | 6 | 6 |
 | 8d6351b6-... | 0 | 3 | 3 | 3 |
 
-The `cyber.gc1@outlook.com` account is the primary administrator responsible for 2,425 Azure control-plane activities during lab setup.
+The `xxx.xxx@outlook.com` account is the primary administrator responsible for 2,425 Azure control-plane activities during lab setup.
 
 ---
 
