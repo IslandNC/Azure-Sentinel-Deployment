@@ -10,7 +10,7 @@ This folder contains screenshots demonstrating the Azure Sentinel deployment in 
 
 | File | Description |
 |---|---|
-| [01-sentinel-overview.png](01-sentinel-overview.png) | Microsoft Defender Azure Activity view — Caller Activities table (cyber.gc1@outlook.com: 2,425 ops) and Activities by log level over time chart (Informational: 51, Error: 11, Warning: 0) |
+| [01-sentinel-overview.png](01-sentinel-overview.png) | Microsoft Defender Azure Activity view — Caller Activities table (xxx.xxx@outlook.com: 2,425 ops) and Activities by log level over time chart (Informational: 51, Error: 11, Warning: 0) |
 | [02-detection-rules.png](02-detection-rules.png) | Microsoft Sentinel Detection Rules — all 3 custom analytic rules enabled: Entra ID Sign-in from Different Location (High), RDP Brute Force Attack (Medium), SSH Brute Force on Linux (Low) |
 | [03-vulnerability-exposure-score.png](03-vulnerability-exposure-score.png) | Exposure Management dashboard — Top Initiatives (Zero Trust 14%, Ransomware Protection 26%), Vulnerability Management score 43/100 (Medium), score history (+43% over 6 days), device exposure distribution, and threat actor initiative drops panel (Storm-2885, Granite Typhoon, BadSuccessor, etc.) |
 | [03-vulnerability-score.png](03-vulnerability-score.png) | MDVM Vulnerability Management Overview — Endpoint exposure score gauge showing 43/100 Medium with Low/Medium/High band legend and score history trend |
